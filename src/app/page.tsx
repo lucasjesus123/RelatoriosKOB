@@ -1,0 +1,9 @@
+import { RelatorioApuracao } from '@/components/RelatorioApuracao'
+
+export default function Home() {
+  return (
+    <div className="flex flex-1 flex-col bg-zinc-50">
+      <RelatorioApuracao />
+    </div>
+  )
+}
