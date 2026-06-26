@@ -1,0 +1,43 @@
+name: Deploy to VPS
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: {}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -p "${{ secrets.VPS_PORT }}" "${{ secrets.VPS_HOST }}" >> ~/.ssh/known_hosts
+
+      - name: Sync project to VPS
+        run: |
+          for attempt in 1 2 3 4; do
+            rsync -az --delete \
+              --exclude '.git' --exclude 'node_modules' --exclude '.next' \
+              -e "ssh -p ${{ secrets.VPS_PORT }} -i ~/.ssh/id_ed25519" \
+              ./ "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:${{ secrets.VPS_TARGET }}/" \
+              && break
+            echo "rsync failed (attempt $attempt), retrying..."
+            sleep $((2 ** attempt))
+          done
+
+      - name: Copy sync script
+        run: |
+          scp -P "${{ secrets.VPS_PORT }}" -i ~/.ssh/id_ed25519 \
+            scripts/vps-sync.sh \
+            "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/home/${{ secrets.VPS_USER }}/vps-sync.sh"
+
+      - name: Run remote build/restart
+        run: |
+          ssh -p "${{ secrets.VPS_PORT }}" -i ~/.ssh/id_ed25519 \
+            "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}" \
+            "VPS_TARGET=${{ secrets.VPS_TARGET }} bash /home/${{ secrets.VPS_USER }}/vps-sync.sh"

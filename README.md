@@ -1,36 +1,107 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# RelatoriosKOB
 
-## Getting Started
+Ferramenta de apuração de CFOP: extrai dados de PDFs, calcula totais com `decimal.js` e exibe um relatório com gráfico.
 
-First, run the development server:
+## Estrutura
+
+- `src/app/api/process/route.ts` — endpoint que recebe o PDF e processa
+- `src/components/RelatorioApuracao.tsx` — tela do relatório
+- `src/components/GraficoApuracao.tsx` — gráfico (recharts)
+- `src/lib/extract.ts` — extração de texto/dados do PDF
+- `src/lib/cfop.ts` — regras de CFOP
+- `src/lib/calculations.ts` — cálculos de apuração
+- `src/lib/humanize.ts` — formatação para exibição
+- `src/lib/types.ts` — tipos compartilhados
+
+## Desenvolvimento
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Abra http://localhost:3000.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Deploy em VPS com Docker
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Pré-requisitos na VPS: Docker e Docker Compose instalados.
 
-## Learn More
+```bash
+git clone <url-do-repo>
+cd RelatoriosKOB
+docker compose up -d --build
+```
 
-To learn more about Next.js, take a look at the following resources:
+A aplicação ficará disponível na porta `3000`. Para usar um domínio com HTTPS, coloque um proxy reverso (ex.: Nginx ou Caddy) na frente apontando para `localhost:3000`.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Para atualizar após novos commits:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+git pull
+docker compose up -d --build
+```
 
-## Deploy on Vercel
+## Deploy automático (GitHub Actions → VPS)
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+`.github/workflows/deploy.yml` faz, a cada push em `main`: `rsync` do projeto para a VPS →
+`docker compose up -d --build` (via `scripts/vps-sync.sh`).
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Secrets do repositório (Settings → Secrets and variables → Actions):
+
+| Secret | Valor |
+|---|---|
+| `SSH_PRIVATE_KEY` | chave privada com acesso ao usuário `deploy` na VPS |
+| `VPS_HOST` | `2.25.129.43` |
+| `VPS_USER` | `deploy` |
+| `VPS_PORT` | `22` |
+| `VPS_TARGET` | `/var/www/relatorioskob` |
+
+Na VPS, crie o diretório de destino antes do primeiro deploy:
+
+```bash
+mkdir -p /var/www/relatorioskob
+chown deploy:deploy /var/www/relatorioskob
+```
+
+### Nginx + SSL (domínio kobdigital.online)
+
+Rodar na VPS, como root, depois do primeiro deploy (container já escutando em `127.0.0.1:3000`):
+
+```bash
+cat > /etc/nginx/sites-available/relatorioskob <<'EOF'
+server {
+    listen 80;
+    server_name kobdigital.online www.kobdigital.online;
+
+    location / {
+        proxy_pass http://127.0.0.1:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+EOF
+ln -sf /etc/nginx/sites-available/relatorioskob /etc/nginx/sites-enabled/relatorioskob
+nginx -t && systemctl reload nginx
+certbot --nginx -d kobdigital.online -d www.kobdigital.online -m diego@agentesintegrados.com.br --agree-tos --redirect
+```
+
+## Deploy em VPS sem Docker
+
+```bash
+npm install
+npm run build
+npm run start
+```
+
+Recomenda-se usar um gerenciador de processos (ex.: `pm2`) para manter a aplicação ativa:
+
+```bash
+npm install -g pm2
+pm2 start npm --name relatorioskob -- start
+pm2 save
+```
