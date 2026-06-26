@@ -23,8 +23,14 @@ export interface ComparativoResultado {
   totalSaidas: string // mercadorias + serviços
   resultado: string // saídas - entradas
   valorSimples: string
-  percVendas: string
+  // Alíquotas efetivas do Simples por anexo (string com 2 casas, '0.00' se não houver).
+  percComercio: string
+  percIndustria: string
   percServicos: string
+  // Indica quais grupos existem (receita > 0), para exibir só o que faz sentido.
+  temComercio: boolean
+  temIndustria: boolean
+  temServicos: boolean
 }
 
 function somar(itens: ItemCfopResumo[]): Decimal {
@@ -40,7 +46,7 @@ export function montarComparativo(
 
   const totalEntradas = somar(entradas)
   const totalSaidasMerc = somar(saidasMerc)
-  const servicos = simples.servicosReceita
+  const servicos = simples.servico.receita
   const totalSaidas = totalSaidasMerc.plus(servicos)
   const resultado = totalSaidas.minus(totalEntradas)
 
@@ -59,7 +65,11 @@ export function montarComparativo(
     totalSaidas: totalSaidas.toFixed(2),
     resultado: resultado.toFixed(2),
     valorSimples: simples.valorSimples.toFixed(2),
-    percVendas: simples.percVendas.toFixed(2),
-    percServicos: simples.percServicos.toFixed(2),
+    percComercio: simples.comercio.perc.toFixed(2),
+    percIndustria: simples.industria.perc.toFixed(2),
+    percServicos: simples.servico.perc.toFixed(2),
+    temComercio: !simples.comercio.receita.isZero(),
+    temIndustria: !simples.industria.receita.isZero(),
+    temServicos: !simples.servico.receita.isZero(),
   }
 }

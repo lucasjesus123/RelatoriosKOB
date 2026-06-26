@@ -60,8 +60,9 @@ describe('montarComparativo (com devoluções contando)', () => {
     expect(r.totalSaidas).toBe('52092.10')
     expect(r.resultado).toBe('20126.15')
     expect(r.valorSimples).toBe('5220.28')
-    expect(r.percVendas).toBe('6.90')
+    expect(r.percComercio).toBe('6.90')
     expect(r.percServicos).toBe('11.58')
+    expect(r.temIndustria).toBe(false)
   })
 
   it('usa Decimal sem perder centavos', () => {

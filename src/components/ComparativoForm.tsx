@@ -191,13 +191,22 @@ export function ComparativoForm({ clientes }: { clientes: ClienteOpcao[] }) {
             <p className="text-xs uppercase text-gray-500">Valor do Simples Nacional (DAS)</p>
             <p className="text-2xl font-bold text-orange-600">R$ {moeda(res.valorSimples)}</p>
             <p className="mt-1 text-sm text-gray-600">Serviços (Simples): R$ {moeda(res.servicos)}</p>
-            <div className="mt-3 flex gap-8 text-sm text-gray-700">
-              <span>
-                % efetiva Vendas: <strong>{moeda(res.percVendas)}%</strong>
-              </span>
-              <span>
-                % efetiva Serviços: <strong>{moeda(res.percServicos)}%</strong>
-              </span>
+            <div className="mt-3 flex flex-wrap gap-8 text-sm text-gray-700">
+              {res.temComercio && (
+                <span>
+                  % efetiva Vendas Comércio: <strong>{moeda(res.percComercio)}%</strong>
+                </span>
+              )}
+              {res.temIndustria && (
+                <span>
+                  % efetiva Vendas Indústria: <strong>{moeda(res.percIndustria)}%</strong>
+                </span>
+              )}
+              {res.temServicos && (
+                <span>
+                  % efetiva Serviços: <strong>{moeda(res.percServicos)}%</strong>
+                </span>
+              )}
             </div>
           </section>
         </div>

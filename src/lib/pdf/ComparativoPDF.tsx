@@ -217,12 +217,23 @@ export function ComparativoPDF({
             <Text style={styles.totalLabel}>VALOR DO SIMPLES NACIONAL (DAS)</Text>
             <Text style={styles.simplesValor}>R$ {formatarMoedaBR(dados.valorSimples)}</Text>
             <View style={styles.pctRow}>
-              <Text style={styles.pct}>
-                % efetiva Vendas: <Text style={styles.pctNum}>{formatarMoedaBR(dados.percVendas)}%</Text>
-              </Text>
-              <Text style={styles.pct}>
-                % efetiva Serviços: <Text style={styles.pctNum}>{formatarMoedaBR(dados.percServicos)}%</Text>
-              </Text>
+              {dados.temComercio && (
+                <Text style={styles.pct}>
+                  % efetiva Vendas Comércio:{' '}
+                  <Text style={styles.pctNum}>{formatarMoedaBR(dados.percComercio)}%</Text>
+                </Text>
+              )}
+              {dados.temIndustria && (
+                <Text style={styles.pct}>
+                  % efetiva Vendas Indústria:{' '}
+                  <Text style={styles.pctNum}>{formatarMoedaBR(dados.percIndustria)}%</Text>
+                </Text>
+              )}
+              {dados.temServicos && (
+                <Text style={styles.pct}>
+                  % efetiva Serviços: <Text style={styles.pctNum}>{formatarMoedaBR(dados.percServicos)}%</Text>
+                </Text>
+              )}
             </View>
           </View>
         </View>
