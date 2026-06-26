@@ -1,36 +1,58 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# RelatoriosKOB
 
-## Getting Started
+Ferramenta de apuração de CFOP: extrai dados de PDFs, calcula totais com `decimal.js` e exibe um relatório com gráfico.
 
-First, run the development server:
+## Estrutura
+
+- `src/app/api/process/route.ts` — endpoint que recebe o PDF e processa
+- `src/components/RelatorioApuracao.tsx` — tela do relatório
+- `src/components/GraficoApuracao.tsx` — gráfico (recharts)
+- `src/lib/extract.ts` — extração de texto/dados do PDF
+- `src/lib/cfop.ts` — regras de CFOP
+- `src/lib/calculations.ts` — cálculos de apuração
+- `src/lib/humanize.ts` — formatação para exibição
+- `src/lib/types.ts` — tipos compartilhados
+
+## Desenvolvimento
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Abra http://localhost:3000.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Deploy em VPS com Docker
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Pré-requisitos na VPS: Docker e Docker Compose instalados.
 
-## Learn More
+```bash
+git clone <url-do-repo>
+cd RelatoriosKOB
+docker compose up -d --build
+```
 
-To learn more about Next.js, take a look at the following resources:
+A aplicação ficará disponível na porta `3000`. Para usar um domínio com HTTPS, coloque um proxy reverso (ex.: Nginx ou Caddy) na frente apontando para `localhost:3000`.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Para atualizar após novos commits:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+git pull
+docker compose up -d --build
+```
 
-## Deploy on Vercel
+## Deploy em VPS sem Docker
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```bash
+npm install
+npm run build
+npm run start
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Recomenda-se usar um gerenciador de processos (ex.: `pm2`) para manter a aplicação ativa:
+
+```bash
+npm install -g pm2
+pm2 start npm --name relatorioskob -- start
+pm2 save
+```
