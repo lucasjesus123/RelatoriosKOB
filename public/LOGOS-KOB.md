@@ -1,12 +1,15 @@
-# Logos da KOB
+# Logo da KOB no PDF
 
-Coloque os arquivos de logo nesta pasta `public/` com estes nomes exatos:
+Coloque o arquivo do logo nesta pasta `public/` com este nome:
 
-- `logo-kob-branco.png` — logo **branco** (usado no cabeçalho azul-marinho do PDF do relatório).
-- `logo-kob-preto.png` — logo **preto** (para fundos claros, se necessário).
+- `logo-kob.png` — logo da KOB (pode ser o **preto**, de preferência com **fundo transparente**).
 
-Assim que `public/logo-kob-branco.png` existir, o PDF do relatório passa a usá-lo
-automaticamente no cabeçalho. Enquanto o arquivo não estiver presente, o sistema
-mostra o texto "KOB / CONTABILIDADE ESTRATÉGICA" como alternativa.
+No cabeçalho do PDF o logo é colocado sobre uma **placa branca**, então o logo
+preto fica perfeito (sem o fundo cinza). Se preferir, também são aceitos os nomes
+`logo-kob-preto.png` ou `logo-kob-branco.png`.
 
-Formatos aceitos pelo PDF: PNG ou JPG. Prefira PNG com fundo transparente.
+Enquanto o arquivo não estiver presente, o PDF mostra o texto
+"KOB / CONTABILIDADE ESTRATÉGICA" (em azul-marinho, sobre a placa branca).
+
+Como subir pelo GitHub: repositório → pasta `public` → "Add file" → "Upload files"
+→ arraste a imagem com o nome `logo-kob.png` → Commit. O próximo PDF já usa o logo.

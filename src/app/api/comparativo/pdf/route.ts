@@ -9,7 +9,7 @@ import type { ComparativoResultado } from '@/lib/comparativo'
 export const runtime = 'nodejs'
 
 async function carregarLogo(): Promise<string | null> {
-  for (const nome of ['logo-kob-branco.png', 'logo-kob-branco.jpg', 'logo-kob.png', 'logo-kob.jpg']) {
+  for (const nome of ['logo-kob.png', 'logo-kob-preto.png', 'logo-kob.jpg', 'logo-kob-branco.png']) {
     try {
       const buf = await readFile(path.join(process.cwd(), 'public', nome))
       const mime = nome.endsWith('.png') ? 'image/png' : 'image/jpeg'

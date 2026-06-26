@@ -33,9 +33,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
   },
-  logoImg: { width: 110, height: 42, objectFit: 'contain' },
-  logoKOB: { color: COR.branco, fontSize: 22, fontFamily: 'Helvetica-Bold', letterSpacing: 2 },
-  logoTag: { color: '#aebfd2', fontSize: 6, letterSpacing: 1.5, marginTop: 1 },
+  // Placa branca atrás do logo: o logo (preto) fica perfeito sobre o cabeçalho marinho.
+  logoPlate: {
+    backgroundColor: COR.branco,
+    borderRadius: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  logoImg: { width: 120, height: 44, objectFit: 'contain' },
+  logoKOB: { color: COR.marinho, fontSize: 22, fontFamily: 'Helvetica-Bold', letterSpacing: 2 },
+  logoTag: { color: COR.cinza, fontSize: 6, letterSpacing: 1.5, marginTop: 1 },
   title: { color: COR.branco, fontSize: 15, fontFamily: 'Helvetica-Bold', textAlign: 'right' },
   subtitle: { color: '#aebfd2', fontSize: 9, marginTop: 2, textAlign: 'right' },
   metaBar: {
@@ -159,12 +168,12 @@ export function ComparativoPDF({
     <Document title="Comparativo de Entradas e Saídas" author="KOB Contabilidade Estratégica">
       <Page size="A4" style={styles.page}>
         <View style={styles.header} fixed>
-          <View>
+          <View style={styles.logoPlate}>
             {meta.logoSrc ? (
               // eslint-disable-next-line jsx-a11y/alt-text
               <Image src={meta.logoSrc} style={styles.logoImg} />
             ) : (
-              <View>
+              <View style={{ alignItems: 'center' }}>
                 <Text style={styles.logoKOB}>KOB</Text>
                 <Text style={styles.logoTag}>CONTABILIDADE ESTRATÉGICA</Text>
               </View>
@@ -239,7 +248,9 @@ export function ComparativoPDF({
         </View>
 
         <View style={styles.footer} fixed>
-          <Text style={styles.footerTxt}>KOB Contabilidade Estratégica — Relatório gerado automaticamente</Text>
+          <Text style={styles.footerTxt}>
+            KOB Contabilidade Estratégica — Relatório Analítico e Estratégico KOB
+          </Text>
           <Text
             style={styles.footerTxt}
             render={({ pageNumber, totalPages }) => `Página ${pageNumber} de ${totalPages}`}
