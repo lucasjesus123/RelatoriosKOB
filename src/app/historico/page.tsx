@@ -2,8 +2,10 @@ import { exigirUsuario } from '@/lib/dal'
 import { prisma } from '@/lib/db'
 import { AppHeader } from '@/components/AppHeader'
 import { BaixarPdfButton } from '@/components/BaixarPdfButton'
+import { ComparativoDownloadButton } from '@/components/ComparativoDownloadButton'
 import { formatarMoedaBR } from '@/lib/pdf/format'
 import type { RelatorioResposta } from '@/lib/types'
+import type { ComparativoResultado } from '@/lib/comparativo'
 
 export const dynamic = 'force-dynamic'
 
@@ -50,7 +52,8 @@ export default async function HistoricoPage() {
                 </thead>
                 <tbody className="divide-y divide-gray-100">
                   {reports.map((r) => {
-                    const dados = r.dados as unknown as RelatorioResposta
+                    const bruto = r.dados as unknown as { tipo?: string }
+                    const ehComparativo = bruto?.tipo === 'comparativo'
                     return (
                       <tr key={r.id}>
                         <td className="px-2 py-2 text-gray-700">
@@ -66,17 +69,31 @@ export default async function HistoricoPage() {
                           R$ {formatarMoedaBR(r.somaGeralSaidas)}
                         </td>
                         <td className="px-2 py-2 text-right font-medium text-gray-900">
-                          {formatarMoedaBR(r.percentualX)}%
+                          {ehComparativo
+                            ? `R$ ${formatarMoedaBR(r.percentualX)}`
+                            : `${formatarMoedaBR(r.percentualX)}%`}
                         </td>
                         <td className="px-2 py-2">
-                          <BaixarPdfButton
-                            relatorio={dados}
-                            cliente={r.client?.nome}
-                            periodo={r.periodo ?? undefined}
-                            nomeArquivo={`relatorio-${r.client?.nome ?? 'cfop'}-${r.createdAt
-                              .toISOString()
-                              .slice(0, 10)}.pdf`}
-                          />
+                          {ehComparativo ? (
+                            <ComparativoDownloadButton
+                              dados={r.dados as unknown as ComparativoResultado}
+                              cliente={r.client?.nome}
+                              cnpj={(r.dados as unknown as { cnpj?: string }).cnpj}
+                              periodo={r.periodo ?? undefined}
+                              nomeArquivo={`comparativo-${r.client?.nome ?? 'cfop'}-${r.createdAt
+                                .toISOString()
+                                .slice(0, 10)}.pdf`}
+                            />
+                          ) : (
+                            <BaixarPdfButton
+                              relatorio={r.dados as unknown as RelatorioResposta}
+                              cliente={r.client?.nome}
+                              periodo={r.periodo ?? undefined}
+                              nomeArquivo={`relatorio-${r.client?.nome ?? 'cfop'}-${r.createdAt
+                                .toISOString()
+                                .slice(0, 10)}.pdf`}
+                            />
+                          )}
                         </td>
                       </tr>
                     )
