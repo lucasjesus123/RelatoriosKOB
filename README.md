@@ -41,6 +41,55 @@ git pull
 docker compose up -d --build
 ```
 
+## Deploy automático (GitHub Actions → VPS)
+
+`.github/workflows/deploy.yml` faz, a cada push em `main`: `rsync` do projeto para a VPS →
+`docker compose up -d --build` (via `scripts/vps-sync.sh`).
+
+Secrets do repositório (Settings → Secrets and variables → Actions):
+
+| Secret | Valor |
+|---|---|
+| `SSH_PRIVATE_KEY` | chave privada com acesso ao usuário `deploy` na VPS |
+| `VPS_HOST` | `2.25.129.43` |
+| `VPS_USER` | `deploy` |
+| `VPS_PORT` | `22` |
+| `VPS_TARGET` | `/var/www/relatorioskob` |
+
+Na VPS, crie o diretório de destino antes do primeiro deploy:
+
+```bash
+mkdir -p /var/www/relatorioskob
+chown deploy:deploy /var/www/relatorioskob
+```
+
+### Nginx + SSL (domínio kobdigital.online)
+
+Rodar na VPS, como root, depois do primeiro deploy (container já escutando em `127.0.0.1:3000`):
+
+```bash
+cat > /etc/nginx/sites-available/relatorioskob <<'EOF'
+server {
+    listen 80;
+    server_name kobdigital.online www.kobdigital.online;
+
+    location / {
+        proxy_pass http://127.0.0.1:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+EOF
+ln -sf /etc/nginx/sites-available/relatorioskob /etc/nginx/sites-enabled/relatorioskob
+nginx -t && systemctl reload nginx
+certbot --nginx -d kobdigital.online -d www.kobdigital.online -m diego@agentesintegrados.com.br --agree-tos --redirect
+```
+
 ## Deploy em VPS sem Docker
 
 ```bash
