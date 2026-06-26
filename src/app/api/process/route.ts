@@ -4,6 +4,7 @@ import { prisma } from '@/lib/db'
 import { apurar, ItemExtraido } from '@/lib/calculations'
 import { extrairItensDoTexto, extrairTextoDoPdf } from '@/lib/extract'
 import { carregarBuscadorCfop } from '@/lib/cfop-repo'
+import { detectarCliente } from '@/lib/detect-client'
 import { gerarResumoHumanizado } from '@/lib/humanize'
 import { CATEGORIAS_ORDEM, CATEGORIA_LABEL } from '@/lib/cfop'
 
@@ -95,10 +96,32 @@ export async function POST(request: Request) {
       resumoHumanizado,
     }
 
-    // Valida o cliente informado (se houver) e salva o histórico do relatório.
-    const clientIdValido = clientId
+    // Define o cliente do relatório. Prioridade para o que o usuário escolheu;
+    // se não escolheu, tenta reconhecer o CNPJ/razão social dentro do PDF e,
+    // se não existir, cadastra o cliente automaticamente.
+    let clientIdValido: string | null = clientId
       ? (await prisma.client.findUnique({ where: { id: clientId } }))?.id ?? null
       : null
+
+    let clienteReconhecido: { nome: string; cnpj: string; novo: boolean } | null = null
+
+    if (!clientIdValido) {
+      const detectado = detectarCliente(textos.join('\n'))
+      if (detectado) {
+        const existente = await prisma.client.findFirst({ where: { cnpj: detectado.cnpj } })
+        if (existente) {
+          clientIdValido = existente.id
+          clienteReconhecido = { nome: existente.nome, cnpj: detectado.cnpj, novo: false }
+        } else {
+          const nome = detectado.nome ?? `Cliente ${detectado.cnpj}`
+          const criado = await prisma.client.create({
+            data: { nome, cnpj: detectado.cnpj },
+          })
+          clientIdValido = criado.id
+          clienteReconhecido = { nome, cnpj: detectado.cnpj, novo: true }
+        }
+      }
+    }
 
     const salvo = await prisma.report.create({
       data: {
@@ -113,7 +136,7 @@ export async function POST(request: Request) {
       select: { id: true },
     })
 
-    return NextResponse.json({ ...relatorio, reportId: salvo.id })
+    return NextResponse.json({ ...relatorio, reportId: salvo.id, clienteReconhecido })
   } catch (error) {
     const mensagem = error instanceof Error ? error.message : 'Erro desconhecido ao processar os PDFs.'
     return NextResponse.json({ erro: mensagem }, { status: 400 })
