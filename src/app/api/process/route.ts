@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { obterUsuarioAtual } from '@/lib/dal'
 import { apurar, ItemExtraido } from '@/lib/calculations'
 import { extrairItensDoTexto, extrairTextoDoPdf } from '@/lib/extract'
 import { gerarResumoHumanizado } from '@/lib/humanize'
@@ -28,6 +29,11 @@ async function lerEValidarPdf(file: File): Promise<ArrayBuffer> {
 
 export async function POST(request: Request) {
   try {
+    const usuario = await obterUsuarioAtual()
+    if (!usuario) {
+      return NextResponse.json({ erro: 'Não autenticado.' }, { status: 401 })
+    }
+
     const formData = await request.formData()
     const arquivo1 = formData.get('pdf1')
     const arquivo2 = formData.get('pdf2')

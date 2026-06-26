@@ -15,7 +15,7 @@ function normalizaCfop(codigo: string): string {
   return codigo.replace(/[^0-9]/g, '')
 }
 
-const CFOP_DICIONARIO_RAW: Record<string, { descricao: string; categoria: CfopCategoria }> = {
+export const CFOP_DICIONARIO_RAW: Record<string, { descricao: string; categoria: CfopCategoria }> = {
   // ENTRADAS
   '1101': { descricao: 'Compra para industrialização ou produção rural', categoria: 'ENTRADAS' },
   '1102': { descricao: 'Compra para comercialização', categoria: 'ENTRADAS' },

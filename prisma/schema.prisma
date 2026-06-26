@@ -1,0 +1,97 @@
+// Schema do banco de dados do RelatoriosKOB.
+// Modelos seguem a seção 4 do prompt mestre: usuários com perfis,
+// clientes, mapeamento de CFOP editável, histórico de relatórios e auditoria.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  SUPER_ADMIN
+  USER
+}
+
+enum CfopCategoria {
+  VENDAS
+  DEVOLUCAO_VENDAS
+  ENTRADAS
+  DEVOLUCAO_ENTRADAS
+  SERVICOS
+}
+
+enum CfopNatureza {
+  ENTRADA
+  SAIDA
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  nome         String
+  role         Role     @default(USER)
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+
+  reports   Report[]
+  auditLogs AuditLog[]
+
+  @@map("users")
+}
+
+model Client {
+  id        String   @id @default(cuid())
+  nome      String
+  cnpj      String?
+  createdAt DateTime @default(now())
+
+  reports Report[]
+
+  @@map("clients")
+}
+
+model CfopMapping {
+  id        String        @id @default(cuid())
+  cfop      String        @unique
+  descricao String
+  categoria CfopCategoria
+  natureza  CfopNatureza
+  ativo     Boolean       @default(true)
+  updatedAt DateTime      @updatedAt
+
+  @@map("cfop_mapping")
+}
+
+model Report {
+  id                String   @id @default(cuid())
+  periodo           String?
+  somaGeralEntradas String
+  somaGeralSaidas   String
+  percentualX       String
+  // Snapshot completo do relatório gerado (categorias, itens, resumo).
+  dados             Json
+  createdAt         DateTime @default(now())
+
+  user     User    @relation(fields: [userId], references: [id])
+  userId   String
+  client   Client? @relation(fields: [clientId], references: [id])
+  clientId String?
+
+  @@map("reports")
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  acao      String
+  detalhe   String?
+  createdAt DateTime @default(now())
+
+  user   User?   @relation(fields: [userId], references: [id])
+  userId String?
+
+  @@map("audit_log")
+}
