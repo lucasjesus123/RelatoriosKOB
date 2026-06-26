@@ -85,7 +85,9 @@ export function parseSimplesIdentificacao(texto: string): {
   periodo: string | null
 } {
   const cnpj = texto.match(/(\d{2}\.\d{3}\.\d{3}\/\d{4}-\d{2})/)?.[1] ?? null
-  const periodo = texto.match(/\b(\d{2}\/\d{4})\b/)?.[1] ?? null
+  // Período é a competência no formato MM/AAAA, que aparece sozinho numa linha.
+  // Evita capturar o mês de uma data completa de emissão (ex.: 26/06/2026).
+  const periodo = texto.match(/^\s*(\d{2}\/\d{4})\s*$/m)?.[1] ?? null
   const empresa =
     texto.match(/^([A-ZÀ-Ÿ][A-ZÀ-Ÿ0-9 .,&'-]{4,})\s*$/m)?.[1]?.trim() ?? null
   return { cnpj, empresa, periodo }
