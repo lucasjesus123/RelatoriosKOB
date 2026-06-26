@@ -25,6 +25,7 @@ export const CFOP_DICIONARIO_RAW: Record<string, { descricao: string; categoria:
   '2102': { descricao: 'Compra para comercialização', categoria: 'ENTRADAS' },
   '2403': { descricao: 'Compra para comercialização com subst. tributária', categoria: 'ENTRADAS' },
   '2401': { descricao: 'Compra para industrialização ou produção rural em operação com mercadoria sujeita ao regime de substituição tributária', categoria: 'ENTRADAS' },
+  '2128': { descricao: 'Compra para utilização na prestação de serviço sujeita ao ICMS', categoria: 'ENTRADAS' },
 
   // DEVOLUCAO DE VENDAS
   '1202': { descricao: 'Devolução de venda de mercadoria adquirida ou recebida de terceiros', categoria: 'DEVOLUCAO_VENDAS' },
