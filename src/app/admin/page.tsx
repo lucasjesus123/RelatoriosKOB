@@ -2,71 +2,74 @@ import Link from 'next/link'
 import { exigirPerfil } from '@/lib/dal'
 import { prisma } from '@/lib/db'
 import { AppHeader } from '@/components/AppHeader'
-import { CfopCreateForm } from '@/components/admin/CfopCreateForm'
-import { CfopRow } from '@/components/admin/CfopRow'
 
 export const dynamic = 'force-dynamic'
 
 export default async function AdminPage() {
   const usuario = await exigirPerfil('SUPER_ADMIN')
 
-  const cfops = await prisma.cfopMapping.findMany({
-    orderBy: [{ ativo: 'desc' }, { cfop: 'asc' }],
-  })
+  const [usuarios, cfops, clientes, reports] = await Promise.all([
+    prisma.user.count(),
+    prisma.cfopMapping.count({ where: { ativo: true } }),
+    prisma.client.count(),
+    prisma.report.count(),
+  ])
+
+  const cards = [
+    {
+      href: '/admin/usuarios',
+      titulo: 'Usuários',
+      desc: 'Criar usuários e administradores, ativar ou desativar acessos.',
+      info: `${usuarios} cadastrado(s)`,
+    },
+    {
+      href: '/admin/cfop',
+      titulo: 'Mapeamento de CFOP',
+      desc: 'Adicionar, editar e ativar/desativar os CFOPs da apuração.',
+      info: `${cfops} ativo(s)`,
+    },
+    {
+      href: '/clientes',
+      titulo: 'Clientes',
+      desc: 'Ver e cadastrar clientes vinculados aos relatórios.',
+      info: `${clientes} cadastrado(s)`,
+    },
+    {
+      href: '/historico',
+      titulo: 'Histórico',
+      desc: 'Todos os relatórios gerados no sistema.',
+      info: `${reports} relatório(s)`,
+    },
+  ]
 
   return (
     <div className="flex min-h-screen flex-1 flex-col bg-zinc-50">
       <AppHeader usuario={usuario} />
       <main className="mx-auto w-full max-w-5xl space-y-8 px-4 py-10">
         <header className="space-y-1">
-          <h1 className="text-2xl font-bold text-gray-900">Mapeamento de CFOP</h1>
-          <p className="text-gray-600">
-            Apenas os CFOPs <strong>ativos</strong> entram na apuração. Códigos fora desta lista são ignorados.
-          </p>
+          <h1 className="text-2xl font-bold text-gray-900">Administração</h1>
+          <p className="text-gray-600">Painel do Super Admin — gestão do sistema.</p>
         </header>
 
-        <section className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-          <h2 className="mb-4 text-lg font-semibold text-gray-900">Adicionar CFOP</h2>
-          <CfopCreateForm />
-        </section>
-
-        <section className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-          <h2 className="mb-4 text-lg font-semibold text-gray-900">
-            CFOPs cadastrados ({cfops.length})
-          </h2>
-          <div className="overflow-x-auto">
-            <table className="w-full border-collapse text-left">
-              <thead>
-                <tr className="border-b border-gray-200 text-xs uppercase text-gray-500">
-                  <th className="px-2 py-2 font-medium">CFOP</th>
-                  <th className="px-2 py-2 font-medium">Descrição</th>
-                  <th className="px-2 py-2 font-medium">Categoria</th>
-                  <th className="px-2 py-2 font-medium">Natureza</th>
-                  <th className="px-2 py-2 font-medium">Ações</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                {cfops.map((c) => (
-                  <CfopRow
-                    key={c.id}
-                    item={{
-                      id: c.id,
-                      cfop: c.cfop,
-                      descricao: c.descricao,
-                      categoria: c.categoria,
-                      natureza: c.natureza,
-                      ativo: c.ativo,
-                    }}
-                  />
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </section>
-
-        <Link href="/" className="inline-block text-sm font-medium text-blue-600 hover:underline">
-          ← Voltar para a apuração
-        </Link>
+        <div className="grid gap-4 sm:grid-cols-2">
+          {cards.map((c) => (
+            <Link
+              key={c.href}
+              href={c.href}
+              className="group rounded-lg border border-gray-200 bg-white p-6 shadow-sm transition hover:border-blue-400 hover:shadow"
+            >
+              <div className="flex items-center justify-between">
+                <h2 className="text-lg font-semibold text-gray-900 group-hover:text-blue-700">
+                  {c.titulo}
+                </h2>
+                <span className="rounded-full bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-700">
+                  {c.info}
+                </span>
+              </div>
+              <p className="mt-2 text-sm text-gray-600">{c.desc}</p>
+            </Link>
+          ))}
+        </div>
       </main>
     </div>
   )

@@ -27,7 +27,12 @@ export function AppHeader({ usuario }: { usuario: UsuarioSeguro }) {
               Administração
             </Link>
           )}
-          <span className="hidden text-gray-600 sm:inline">{usuario.nome}</span>
+          <span className="mx-1 hidden h-5 w-px bg-gray-200 sm:inline-block" aria-hidden />
+          <span className="hidden items-center gap-1.5 rounded-full bg-gray-100 px-2.5 py-1 text-xs text-gray-700 sm:inline-flex">
+            <span aria-hidden>👤</span>
+            {usuario.nome}
+            {ehAdmin && <span className="font-medium text-blue-600">· Super Admin</span>}
+          </span>
           <form action={logout}>
             <button type="submit" className="font-medium text-gray-600 hover:text-gray-900">
               Sair
