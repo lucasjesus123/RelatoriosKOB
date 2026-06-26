@@ -22,13 +22,38 @@ jobs:
         run: |
           for attempt in 1 2 3 4; do
             rsync -az --delete \
-              --exclude '.git' --exclude 'node_modules' --exclude '.next' \
+              --exclude '.git' --exclude 'node_modules' --exclude '.next' --exclude '.env' \
               -e "ssh -p ${{ secrets.VPS_PORT }} -i ~/.ssh/id_ed25519" \
               ./ "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:${{ secrets.VPS_TARGET }}/" \
               && break
             echo "rsync failed (attempt $attempt), retrying..."
             sleep $((2 ** attempt))
           done
+
+      - name: Write .env on VPS
+        env:
+          SESSION_SECRET: ${{ secrets.SESSION_SECRET }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          SEED_SUPER_ADMIN_EMAIL: ${{ secrets.SEED_SUPER_ADMIN_EMAIL }}
+          SEED_SUPER_ADMIN_PASSWORD: ${{ secrets.SEED_SUPER_ADMIN_PASSWORD }}
+          SEED_SUPER_ADMIN_NOME: ${{ secrets.SEED_SUPER_ADMIN_NOME }}
+        run: |
+          POSTGRES_USER=kob
+          POSTGRES_DB=relatorioskob
+          {
+            echo "POSTGRES_USER=${POSTGRES_USER}"
+            echo "POSTGRES_PASSWORD=${POSTGRES_PASSWORD}"
+            echo "POSTGRES_DB=${POSTGRES_DB}"
+            echo "DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}?schema=public"
+            echo "SESSION_SECRET=${SESSION_SECRET}"
+            echo "SEED_SUPER_ADMIN_EMAIL=${SEED_SUPER_ADMIN_EMAIL}"
+            echo "SEED_SUPER_ADMIN_PASSWORD=${SEED_SUPER_ADMIN_PASSWORD}"
+            echo "SEED_SUPER_ADMIN_NOME=${SEED_SUPER_ADMIN_NOME:-Administrador}"
+          } > .env.deploy
+          scp -P "${{ secrets.VPS_PORT }}" -i ~/.ssh/id_ed25519 \
+            .env.deploy \
+            "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:${{ secrets.VPS_TARGET }}/.env"
+          rm -f .env.deploy
 
       - name: Copy sync script
         run: |

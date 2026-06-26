@@ -9,7 +9,14 @@ const nextConfig: NextConfig = {
   // resolves its worker file (pdf.worker.mjs) by a path relative to its own
   // location on disk, which breaks once it's bundled into .next/server/chunks.
   // Marking them external keeps them loaded straight from node_modules.
-  serverExternalPackages: ["pdf-parse", "pdfjs-dist", "@napi-rs/canvas"],
+  serverExternalPackages: [
+    "pdf-parse",
+    "pdfjs-dist",
+    "@napi-rs/canvas",
+    "@prisma/client",
+    "@prisma/adapter-pg",
+    "pg",
+  ],
 };
 
 export default nextConfig;
