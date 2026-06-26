@@ -8,11 +8,18 @@ function formatarMoeda(valor: string): string {
   return Number(valor).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 }
 
-export function RelatorioApuracao() {
+interface ClienteOpcao {
+  id: string
+  nome: string
+}
+
+export function RelatorioApuracao({ clientes }: { clientes: ClienteOpcao[] }) {
   const [arquivo1, setArquivo1] = useState<File | null>(null)
   const [arquivo2, setArquivo2] = useState<File | null>(null)
-  const [cliente, setCliente] = useState('')
+  const [clienteId, setClienteId] = useState('')
   const [periodo, setPeriodo] = useState('')
+
+  const clienteNome = clientes.find((c) => c.id === clienteId)?.nome ?? ''
   const [carregando, setCarregando] = useState(false)
   const [baixandoPdf, setBaixandoPdf] = useState(false)
   const [erro, setErro] = useState<string | null>(null)
@@ -26,7 +33,7 @@ export function RelatorioApuracao() {
       const resposta = await fetch('/api/report/pdf', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ relatorio, cliente, periodo }),
+        body: JSON.stringify({ relatorio, cliente: clienteNome, periodo }),
       })
       if (!resposta.ok) {
         setErro('Não foi possível gerar o PDF. Tente novamente.')
@@ -65,6 +72,8 @@ export function RelatorioApuracao() {
       if (arquivo2) {
         formData.append('pdf2', arquivo2)
       }
+      if (clienteId) formData.append('clientId', clienteId)
+      if (periodo) formData.append('periodo', periodo)
 
       const resposta = await fetch('/api/process', {
         method: 'POST',
@@ -125,13 +134,18 @@ export function RelatorioApuracao() {
         <div className="grid gap-4 sm:grid-cols-2">
           <label className="block">
             <span className="mb-1 block text-sm font-medium text-gray-700">Cliente (opcional)</span>
-            <input
-              type="text"
-              value={cliente}
-              onChange={(e) => setCliente(e.target.value)}
-              placeholder="Nome do cliente para o relatório"
+            <select
+              value={clienteId}
+              onChange={(e) => setClienteId(e.target.value)}
               className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900"
-            />
+            >
+              <option value="">— Sem cliente —</option>
+              {clientes.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.nome}
+                </option>
+              ))}
+            </select>
           </label>
           <label className="block">
             <span className="mb-1 block text-sm font-medium text-gray-700">Período (opcional)</span>

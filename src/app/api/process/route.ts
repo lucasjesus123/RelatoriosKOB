@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { obterUsuarioAtual } from '@/lib/dal'
+import { prisma } from '@/lib/db'
 import { apurar, ItemExtraido } from '@/lib/calculations'
 import { extrairItensDoTexto, extrairTextoDoPdf } from '@/lib/extract'
 import { carregarBuscadorCfop } from '@/lib/cfop-repo'
@@ -38,6 +39,10 @@ export async function POST(request: Request) {
     const formData = await request.formData()
     const arquivo1 = formData.get('pdf1')
     const arquivo2 = formData.get('pdf2')
+    const clientIdBruto = formData.get('clientId')
+    const periodoBruto = formData.get('periodo')
+    const clientId = typeof clientIdBruto === 'string' && clientIdBruto ? clientIdBruto : null
+    const periodo = typeof periodoBruto === 'string' && periodoBruto.trim() ? periodoBruto.trim() : null
 
     if (!(arquivo1 instanceof File)) {
       return NextResponse.json(
@@ -82,13 +87,33 @@ export async function POST(request: Request) {
       }
     })
 
-    return NextResponse.json({
+    const relatorio = {
       categorias,
       somaGeralEntradas: apuracao.somaGeralEntradas.toFixed(2),
       somaGeralSaidas: apuracao.somaGeralSaidas.toFixed(2),
       percentualX: apuracao.percentualX.toFixed(2),
       resumoHumanizado,
+    }
+
+    // Valida o cliente informado (se houver) e salva o histórico do relatório.
+    const clientIdValido = clientId
+      ? (await prisma.client.findUnique({ where: { id: clientId } }))?.id ?? null
+      : null
+
+    const salvo = await prisma.report.create({
+      data: {
+        periodo,
+        somaGeralEntradas: relatorio.somaGeralEntradas,
+        somaGeralSaidas: relatorio.somaGeralSaidas,
+        percentualX: relatorio.percentualX,
+        dados: relatorio,
+        userId: usuario.id,
+        clientId: clientIdValido,
+      },
+      select: { id: true },
     })
+
+    return NextResponse.json({ ...relatorio, reportId: salvo.id })
   } catch (error) {
     const mensagem = error instanceof Error ? error.message : 'Erro desconhecido ao processar os PDFs.'
     return NextResponse.json({ erro: mensagem }, { status: 400 })

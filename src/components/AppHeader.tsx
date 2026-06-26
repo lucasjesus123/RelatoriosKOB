@@ -13,6 +13,15 @@ export function AppHeader({ usuario }: { usuario: UsuarioSeguro }) {
         </Link>
 
         <nav className="flex items-center gap-4 text-sm">
+          <Link href="/" className="font-medium text-gray-600 hover:text-gray-900">
+            Apuração
+          </Link>
+          <Link href="/clientes" className="font-medium text-gray-600 hover:text-gray-900">
+            Clientes
+          </Link>
+          <Link href="/historico" className="font-medium text-gray-600 hover:text-gray-900">
+            Histórico
+          </Link>
           {ehAdmin && (
             <Link href="/admin" className="font-medium text-blue-600 hover:underline">
               Administração
