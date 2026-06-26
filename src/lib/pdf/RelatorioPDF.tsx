@@ -47,16 +47,24 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   logoBox: { flexDirection: 'row', alignItems: 'center' },
-  logoImg: { width: 110, height: 42, objectFit: 'contain' },
-  logoFallback: { flexDirection: 'column' },
+  logoPlate: {
+    backgroundColor: COR.branco,
+    borderRadius: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  logoImg: { width: 120, height: 44, objectFit: 'contain' },
+  logoFallback: { flexDirection: 'column', alignItems: 'center' },
   logoFallbackKOB: {
-    color: COR.branco,
+    color: COR.marinho,
     fontSize: 22,
     fontFamily: 'Helvetica-Bold',
     letterSpacing: 2,
   },
   logoFallbackTag: {
-    color: '#aebfd2',
+    color: COR.cinza,
     fontSize: 6,
     letterSpacing: 1.5,
     marginTop: 1,
@@ -214,7 +222,7 @@ export function RelatorioPDF({ relatorio, meta }: { relatorio: RelatorioResposta
       <Page size="A4" style={styles.page}>
         {/* Cabeçalho com logo */}
         <View style={styles.header} fixed>
-          <View style={styles.logoBox}>
+          <View style={styles.logoPlate}>
             {meta.logoSrc ? (
               // eslint-disable-next-line jsx-a11y/alt-text
               <Image src={meta.logoSrc} style={styles.logoImg} />
@@ -227,7 +235,7 @@ export function RelatorioPDF({ relatorio, meta }: { relatorio: RelatorioResposta
           </View>
           <View style={styles.headerRight}>
             <Text style={styles.title}>Relatório de Apuração de CFOP</Text>
-            <Text style={styles.subtitle}>KOB Digital — Apuração fiscal</Text>
+            <Text style={styles.subtitle}>KOB Contabilidade Estratégica</Text>
           </View>
         </View>
 
@@ -299,7 +307,9 @@ export function RelatorioPDF({ relatorio, meta }: { relatorio: RelatorioResposta
         </View>
 
         <View style={styles.footer} fixed>
-          <Text style={styles.footerTxt}>KOB Digital — Relatório gerado automaticamente</Text>
+          <Text style={styles.footerTxt}>
+            KOB Contabilidade Estratégica — Relatório Analítico e Estratégico KOB
+          </Text>
           <Text
             style={styles.footerTxt}
             render={({ pageNumber, totalPages }) => `Página ${pageNumber} de ${totalPages}`}

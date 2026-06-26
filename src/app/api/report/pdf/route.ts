@@ -11,12 +11,12 @@ export const runtime = 'nodejs'
 // Lê o logo da KOB de public/ e devolve como data URI; se não existir,
 // retorna null e o PDF usa o texto "KOB" como fallback.
 async function carregarLogo(): Promise<string | null> {
-  // Prefere a versão branca do logo (cabeçalho é azul-marinho).
+  // O logo fica sobre uma placa branca no cabeçalho, então o logo preto serve.
   const candidatos = [
-    'logo-kob-branco.png',
-    'logo-kob-branco.jpg',
     'logo-kob.png',
+    'logo-kob-preto.png',
     'logo-kob.jpg',
+    'logo-kob-branco.png',
     'logo-kob.jpeg',
   ]
   for (const nome of candidatos) {
