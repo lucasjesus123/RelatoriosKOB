@@ -1,5 +1,12 @@
 import { describe, it, expect } from 'vitest'
-import { parseSimplesNacional } from '../simples'
+import { parseSimplesNacional, parseSimplesIdentificacao } from '../simples'
+
+describe('parseSimplesIdentificacao - período', () => {
+  it('pega a competência (MM/AAAA) e ignora a data de emissão completa', () => {
+    const texto = ['Emissão:', '26/06/2026', 'Período:', '619.377.620-68', '02/2026', 'SIMPLES NACIONAL'].join('\n')
+    expect(parseSimplesIdentificacao(texto).periodo).toBe('02/2026')
+  })
+})
 
 // Trecho representativo do extrato do Simples Nacional (layout do pdf-parse).
 const TEXTO = [
