@@ -13,11 +13,18 @@ interface ClienteOpcao {
   nome: string
 }
 
+interface ClienteReconhecido {
+  nome: string
+  cnpj: string
+  novo: boolean
+}
+
 export function RelatorioApuracao({ clientes }: { clientes: ClienteOpcao[] }) {
   const [arquivo1, setArquivo1] = useState<File | null>(null)
   const [arquivo2, setArquivo2] = useState<File | null>(null)
   const [clienteId, setClienteId] = useState('')
   const [periodo, setPeriodo] = useState('')
+  const [clienteReconhecido, setClienteReconhecido] = useState<ClienteReconhecido | null>(null)
 
   const clienteNome = clientes.find((c) => c.id === clienteId)?.nome ?? ''
   const [carregando, setCarregando] = useState(false)
@@ -33,7 +40,11 @@ export function RelatorioApuracao({ clientes }: { clientes: ClienteOpcao[] }) {
       const resposta = await fetch('/api/report/pdf', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ relatorio, cliente: clienteNome, periodo }),
+        body: JSON.stringify({
+          relatorio,
+          cliente: clienteNome || clienteReconhecido?.nome || '',
+          periodo,
+        }),
       })
       if (!resposta.ok) {
         setErro('Não foi possível gerar o PDF. Tente novamente.')
@@ -65,6 +76,7 @@ export function RelatorioApuracao({ clientes }: { clientes: ClienteOpcao[] }) {
     setCarregando(true)
     setErro(null)
     setRelatorio(null)
+    setClienteReconhecido(null)
 
     try {
       const formData = new FormData()
@@ -80,7 +92,9 @@ export function RelatorioApuracao({ clientes }: { clientes: ClienteOpcao[] }) {
         body: formData,
       })
 
-      const dados = (await resposta.json()) as RelatorioResposta | RelatorioErro
+      const dados = (await resposta.json()) as
+        | (RelatorioResposta & { clienteReconhecido?: ClienteReconhecido | null })
+        | RelatorioErro
 
       if (!resposta.ok || 'erro' in dados) {
         setErro('erro' in dados ? dados.erro : 'Erro ao processar os arquivos.')
@@ -88,6 +102,7 @@ export function RelatorioApuracao({ clientes }: { clientes: ClienteOpcao[] }) {
       }
 
       setRelatorio(dados)
+      setClienteReconhecido(dados.clienteReconhecido ?? null)
     } catch {
       setErro('Não foi possível processar os arquivos. Tente novamente.')
     } finally {
@@ -139,7 +154,7 @@ export function RelatorioApuracao({ clientes }: { clientes: ClienteOpcao[] }) {
               onChange={(e) => setClienteId(e.target.value)}
               className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900"
             >
-              <option value="">— Sem cliente —</option>
+              <option value="">— Detectar automaticamente pelo PDF —</option>
               {clientes.map((c) => (
                 <option key={c.id} value={c.id}>
                   {c.nome}
@@ -172,6 +187,15 @@ export function RelatorioApuracao({ clientes }: { clientes: ClienteOpcao[] }) {
 
       {relatorio && (
         <div className="space-y-8">
+          {clienteReconhecido && (
+            <div className="rounded-lg border border-green-200 bg-green-50 p-4 text-sm text-green-800">
+              Cliente reconhecido automaticamente pelo PDF:{' '}
+              <strong>{clienteReconhecido.nome}</strong> (CNPJ {clienteReconhecido.cnpj})
+              {clienteReconhecido.novo
+                ? ' — cadastrado automaticamente.'
+                : ' — vinculado ao cadastro existente.'}
+            </div>
+          )}
           <div className="flex items-center justify-between gap-4 rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
             <p className="text-sm text-gray-600">Relatório gerado. Baixe o PDF formatado para enviar ao cliente.</p>
             <button
