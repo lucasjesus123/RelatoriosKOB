@@ -1,11 +1,12 @@
 import { classificarLinha, ItemExtraido } from './calculations'
+import type { BuscarCfop } from './cfop-repo'
 
 // Casa códigos CFOP no formato "1-101", "1.101" ou "1101" (um dígito de 1 a 7 seguido de 3 dígitos).
 const CFOP_REGEX = /\b([1-7])[-.]?(\d{3})\b/
 // Casa valores monetários no formato brasileiro: 1.234,56 ou 1234,56.
 const VALOR_REGEX = /(?:R\$\s*)?(\d{1,3}(?:\.\d{3})*,\d{2})/g
 
-export function extrairItensDoTexto(texto: string): ItemExtraido[] {
+export function extrairItensDoTexto(texto: string, buscarCfop: BuscarCfop): ItemExtraido[] {
   const itens: ItemExtraido[] = []
   const linhas = texto.split(/\r?\n/)
 
@@ -22,7 +23,7 @@ export function extrairItensDoTexto(texto: string): ItemExtraido[] {
     // que normalmente é o valor total da linha em relatórios de CFOP.
     const valorBruto = valoresMatches[valoresMatches.length - 1][1]
 
-    const item = classificarLinha(cfop, valorBruto)
+    const item = classificarLinha(cfop, valorBruto, buscarCfop)
     if (item) itens.push(item)
   }
 

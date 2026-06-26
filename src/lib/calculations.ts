@@ -1,5 +1,6 @@
 import Decimal from 'decimal.js'
-import { CFOP_DICIONARIO, CfopCategoria, buscarCfop } from './cfop'
+import { CFOP_DICIONARIO, CfopCategoria } from './cfop'
+import type { BuscarCfop } from './cfop-repo'
 
 export interface ItemExtraido {
   cfop: string
@@ -26,7 +27,11 @@ export interface ApuracaoResultado {
 const CATEGORIAS_DE_ENTRADA: CfopCategoria[] = ['ENTRADAS', 'DEVOLUCAO_VENDAS']
 const CATEGORIAS_DE_SAIDA: CfopCategoria[] = ['VENDAS', 'DEVOLUCAO_ENTRADAS', 'SERVICOS']
 
-export function classificarLinha(cfopBruto: string, valorBruto: string): ItemExtraido | null {
+export function classificarLinha(
+  cfopBruto: string,
+  valorBruto: string,
+  buscarCfop: BuscarCfop
+): ItemExtraido | null {
   const info = buscarCfop(cfopBruto)
   if (!info) return null
 
