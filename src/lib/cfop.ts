@@ -58,8 +58,39 @@ export const CFOP_DICIONARIO: Record<string, CfopInfo> = Object.fromEntries(
   ])
 )
 
+// Fallback para CFOPs que não estão no dicionário oficial acima: classifica
+// pelo primeiro dígito (1/2/3 = entradas, 5/6/7 = saídas), com as mesmas
+// exceções do padrão fiscal (x.2xx = devolução, x933 = serviço), para que
+// nenhum valor do PDF seja descartado por não constar na lista exata.
+function classificarPorDigito(codigo: string): { descricao: string; categoria: CfopCategoria } {
+  const primeiroDigito = codigo[0]
+  const isEntradaDigito = primeiroDigito === '1' || primeiroDigito === '2' || primeiroDigito === '3'
+  const isServico = codigo.endsWith('933')
+  const isDevolucao = codigo[1] === '2'
+
+  if (isServico) {
+    return { descricao: 'Prestação de serviço tributado pelo ISSQN', categoria: 'SERVICOS' }
+  }
+
+  if (isEntradaDigito) {
+    return isDevolucao
+      ? { descricao: 'Devolução de venda (classificado por regra de dígito)', categoria: 'DEVOLUCAO_VENDAS' }
+      : { descricao: 'Entrada de mercadoria ou serviço (classificado por regra de dígito)', categoria: 'ENTRADAS' }
+  }
+
+  return isDevolucao
+    ? { descricao: 'Devolução de compra (classificado por regra de dígito)', categoria: 'DEVOLUCAO_ENTRADAS' }
+    : { descricao: 'Venda de mercadoria ou serviço (classificado por regra de dígito)', categoria: 'VENDAS' }
+}
+
 export function buscarCfop(codigoBruto: string): CfopInfo | undefined {
-  return CFOP_DICIONARIO[normalizaCfop(codigoBruto)]
+  const codigo = normalizaCfop(codigoBruto)
+  if (!codigo) return undefined
+
+  const doDicionario = CFOP_DICIONARIO[codigo]
+  if (doDicionario) return doDicionario
+
+  return { codigo, ...classificarPorDigito(codigo) }
 }
 
 export const CATEGORIAS_ORDEM: CfopCategoria[] = [
