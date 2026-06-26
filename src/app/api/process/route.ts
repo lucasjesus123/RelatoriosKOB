@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { obterUsuarioAtual } from '@/lib/dal'
 import { apurar, ItemExtraido } from '@/lib/calculations'
 import { extrairItensDoTexto, extrairTextoDoPdf } from '@/lib/extract'
+import { carregarBuscadorCfop } from '@/lib/cfop-repo'
 import { gerarResumoHumanizado } from '@/lib/humanize'
 import { CATEGORIAS_ORDEM, CATEGORIA_LABEL } from '@/lib/cfop'
 
@@ -50,7 +51,8 @@ export async function POST(request: Request) {
     const buffers = await Promise.all(arquivos.map(lerEValidarPdf))
     const textos = await Promise.all(buffers.map(extrairTextoDoPdf))
 
-    const itens: ItemExtraido[] = textos.flatMap(extrairItensDoTexto)
+    const buscarCfop = await carregarBuscadorCfop()
+    const itens: ItemExtraido[] = textos.flatMap((texto) => extrairItensDoTexto(texto, buscarCfop))
 
     if (itens.length === 0) {
       return NextResponse.json(
