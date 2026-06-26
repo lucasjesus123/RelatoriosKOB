@@ -16,6 +16,9 @@ export function AppHeader({ usuario }: { usuario: UsuarioSeguro }) {
           <Link href="/" className="font-medium text-gray-600 hover:text-gray-900">
             Apuração
           </Link>
+          <Link href="/comparativo" className="font-medium text-gray-600 hover:text-gray-900">
+            Comparativo
+          </Link>
           <Link href="/clientes" className="font-medium text-gray-600 hover:text-gray-900">
             Clientes
           </Link>

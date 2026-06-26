@@ -1,3 +1,9 @@
+// Formata o CFOP com traço: "1102" -> "1-102".
+export function formatarCfop(codigo: string): string {
+  const d = codigo.replace(/[^0-9]/g, '')
+  return d.length === 4 ? `${d[0]}-${d.slice(1)}` : codigo
+}
+
 // Formata um valor numérico (string com ponto decimal) no padrão brasileiro:
 // 1234.5 -> "1.234,50".
 export function formatarMoedaBR(valor: string): string {
