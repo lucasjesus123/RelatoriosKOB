@@ -11,9 +11,42 @@ function formatarMoeda(valor: string): string {
 export function RelatorioApuracao() {
   const [arquivo1, setArquivo1] = useState<File | null>(null)
   const [arquivo2, setArquivo2] = useState<File | null>(null)
+  const [cliente, setCliente] = useState('')
+  const [periodo, setPeriodo] = useState('')
   const [carregando, setCarregando] = useState(false)
+  const [baixandoPdf, setBaixandoPdf] = useState(false)
   const [erro, setErro] = useState<string | null>(null)
   const [relatorio, setRelatorio] = useState<RelatorioResposta | null>(null)
+
+  async function baixarPdf() {
+    if (!relatorio) return
+    setBaixandoPdf(true)
+    setErro(null)
+    try {
+      const resposta = await fetch('/api/report/pdf', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ relatorio, cliente, periodo }),
+      })
+      if (!resposta.ok) {
+        setErro('Não foi possível gerar o PDF. Tente novamente.')
+        return
+      }
+      const blob = await resposta.blob()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = 'relatorio-apuracao-cfop.pdf'
+      document.body.appendChild(a)
+      a.click()
+      a.remove()
+      URL.revokeObjectURL(url)
+    } catch {
+      setErro('Não foi possível gerar o PDF. Tente novamente.')
+    } finally {
+      setBaixandoPdf(false)
+    }
+  }
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -89,6 +122,29 @@ export function RelatorioApuracao() {
           </label>
         </div>
 
+        <div className="grid gap-4 sm:grid-cols-2">
+          <label className="block">
+            <span className="mb-1 block text-sm font-medium text-gray-700">Cliente (opcional)</span>
+            <input
+              type="text"
+              value={cliente}
+              onChange={(e) => setCliente(e.target.value)}
+              placeholder="Nome do cliente para o relatório"
+              className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900"
+            />
+          </label>
+          <label className="block">
+            <span className="mb-1 block text-sm font-medium text-gray-700">Período (opcional)</span>
+            <input
+              type="text"
+              value={periodo}
+              onChange={(e) => setPeriodo(e.target.value)}
+              placeholder="Ex.: Janeiro/2026"
+              className="block w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900"
+            />
+          </label>
+        </div>
+
         <button
           type="submit"
           disabled={carregando}
@@ -102,6 +158,18 @@ export function RelatorioApuracao() {
 
       {relatorio && (
         <div className="space-y-8">
+          <div className="flex items-center justify-between gap-4 rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
+            <p className="text-sm text-gray-600">Relatório gerado. Baixe o PDF formatado para enviar ao cliente.</p>
+            <button
+              type="button"
+              onClick={baixarPdf}
+              disabled={baixandoPdf}
+              className="shrink-0 rounded-md bg-orange-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-orange-700 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {baixandoPdf ? 'Gerando PDF...' : '↓ Baixar PDF'}
+            </button>
+          </div>
+
           {relatorio.categorias.map((categoria) => (
             <section key={categoria.categoria} className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
               <h2 className="mb-3 text-lg font-semibold text-gray-900">{categoria.label}</h2>
