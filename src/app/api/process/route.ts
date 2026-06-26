@@ -32,27 +32,19 @@ export async function POST(request: Request) {
     const arquivo1 = formData.get('pdf1')
     const arquivo2 = formData.get('pdf2')
 
-    if (!(arquivo1 instanceof File) || !(arquivo2 instanceof File)) {
+    if (!(arquivo1 instanceof File)) {
       return NextResponse.json(
-        { erro: 'Envie os dois arquivos PDF nos campos "pdf1" e "pdf2".' },
+        { erro: 'Envie ao menos um arquivo PDF no campo "pdf1".' },
         { status: 400 }
       )
     }
 
-    const [buffer1, buffer2] = await Promise.all([
-      lerEValidarPdf(arquivo1),
-      lerEValidarPdf(arquivo2),
-    ])
+    const arquivos = [arquivo1, ...(arquivo2 instanceof File ? [arquivo2] : [])]
 
-    const [texto1, texto2] = await Promise.all([
-      extrairTextoDoPdf(buffer1),
-      extrairTextoDoPdf(buffer2),
-    ])
+    const buffers = await Promise.all(arquivos.map(lerEValidarPdf))
+    const textos = await Promise.all(buffers.map(extrairTextoDoPdf))
 
-    const itens: ItemExtraido[] = [
-      ...extrairItensDoTexto(texto1),
-      ...extrairItensDoTexto(texto2),
-    ]
+    const itens: ItemExtraido[] = textos.flatMap(extrairItensDoTexto)
 
     if (itens.length === 0) {
       return NextResponse.json(

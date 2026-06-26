@@ -17,8 +17,8 @@ export function RelatorioApuracao() {
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault()
-    if (!arquivo1 || !arquivo2) {
-      setErro('Selecione os dois arquivos PDF antes de enviar.')
+    if (!arquivo1) {
+      setErro('Selecione ao menos um arquivo PDF antes de enviar.')
       return
     }
 
@@ -29,7 +29,9 @@ export function RelatorioApuracao() {
     try {
       const formData = new FormData()
       formData.append('pdf1', arquivo1)
-      formData.append('pdf2', arquivo2)
+      if (arquivo2) {
+        formData.append('pdf2', arquivo2)
+      }
 
       const resposta = await fetch('/api/process', {
         method: 'POST',
@@ -61,7 +63,7 @@ export function RelatorioApuracao() {
       <header className="space-y-2">
         <h1 className="text-2xl font-bold text-gray-900">Apuração de CFOPs</h1>
         <p className="text-gray-600">
-          Envie os dois PDFs com a listagem de CFOPs e valores para gerar o relatório de apuração.
+          Envie um ou dois PDFs com a listagem de CFOPs e valores para gerar o relatório de apuração.
         </p>
       </header>
 
@@ -77,7 +79,7 @@ export function RelatorioApuracao() {
             />
           </label>
           <label className="block">
-            <span className="mb-1 block text-sm font-medium text-gray-700">PDF 2</span>
+            <span className="mb-1 block text-sm font-medium text-gray-700">PDF 2 (opcional)</span>
             <input
               type="file"
               accept="application/pdf"
