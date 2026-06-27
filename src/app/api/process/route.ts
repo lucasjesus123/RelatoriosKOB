@@ -7,16 +7,17 @@ import { carregarBuscadorCfop } from '@/lib/cfop-repo'
 import { detectarCliente } from '@/lib/detect-client'
 import { gerarResumoHumanizado } from '@/lib/humanize'
 import { CATEGORIAS_ORDEM, CATEGORIA_LABEL } from '@/lib/cfop'
+import { ErroUsuario, mensagemDeErroSegura } from '@/lib/errors'
 
 const TAMANHO_MAXIMO_BYTES = 15 * 1024 * 1024 // 15MB por arquivo
 const PDF_MAGIC_BYTES = '%PDF'
 
 async function lerEValidarPdf(file: File): Promise<ArrayBuffer> {
   if (file.size === 0) {
-    throw new Error(`Arquivo "${file.name}" está vazio.`)
+    throw new ErroUsuario(`Arquivo "${file.name}" está vazio.`)
   }
   if (file.size > TAMANHO_MAXIMO_BYTES) {
-    throw new Error(`Arquivo "${file.name}" excede o limite de 15MB.`)
+    throw new ErroUsuario(`Arquivo "${file.name}" excede o limite de 15MB.`)
   }
 
   const buffer = await file.arrayBuffer()
@@ -24,7 +25,7 @@ async function lerEValidarPdf(file: File): Promise<ArrayBuffer> {
   const headerStr = String.fromCharCode(...header)
 
   if (headerStr !== PDF_MAGIC_BYTES) {
-    throw new Error(`Arquivo "${file.name}" não é um PDF válido.`)
+    throw new ErroUsuario(`Arquivo "${file.name}" não é um PDF válido.`)
   }
 
   return buffer
@@ -138,7 +139,9 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ ...relatorio, reportId: salvo.id, clienteReconhecido })
   } catch (error) {
-    const mensagem = error instanceof Error ? error.message : 'Erro desconhecido ao processar os PDFs.'
-    return NextResponse.json({ erro: mensagem }, { status: 400 })
+    return NextResponse.json(
+      { erro: mensagemDeErroSegura(error, 'api/process') },
+      { status: 400 }
+    )
   }
 }

@@ -8,6 +8,7 @@ import { extrairCfopsDoResumo } from '@/lib/cfop-resumo'
 import { parseSimplesNacional, parseSimplesIdentificacao } from '@/lib/simples'
 import { montarComparativo } from '@/lib/comparativo'
 import { gerarResumoComparativo } from '@/lib/humanize-comparativo'
+import { ErroUsuario, mensagemDeErroSegura } from '@/lib/errors'
 
 export const runtime = 'nodejs'
 
@@ -15,11 +16,11 @@ const TAMANHO_MAXIMO_BYTES = 15 * 1024 * 1024
 const PDF_MAGIC_BYTES = '%PDF'
 
 async function lerEValidarPdf(file: File): Promise<ArrayBuffer> {
-  if (file.size === 0) throw new Error(`Arquivo "${file.name}" está vazio.`)
-  if (file.size > TAMANHO_MAXIMO_BYTES) throw new Error(`Arquivo "${file.name}" excede o limite de 15MB.`)
+  if (file.size === 0) throw new ErroUsuario(`Arquivo "${file.name}" está vazio.`)
+  if (file.size > TAMANHO_MAXIMO_BYTES) throw new ErroUsuario(`Arquivo "${file.name}" excede o limite de 15MB.`)
   const buffer = await file.arrayBuffer()
   const header = String.fromCharCode(...new Uint8Array(buffer.slice(0, 4)))
-  if (header !== PDF_MAGIC_BYTES) throw new Error(`Arquivo "${file.name}" não é um PDF válido.`)
+  if (header !== PDF_MAGIC_BYTES) throw new ErroUsuario(`Arquivo "${file.name}" não é um PDF válido.`)
   return buffer
 }
 
@@ -113,7 +114,9 @@ export async function POST(request: Request) {
       clienteReconhecido,
     })
   } catch (error) {
-    const mensagem = error instanceof Error ? error.message : 'Erro desconhecido ao processar os PDFs.'
-    return NextResponse.json({ erro: mensagem }, { status: 400 })
+    return NextResponse.json(
+      { erro: mensagemDeErroSegura(error, 'api/comparativo') },
+      { status: 400 }
+    )
   }
 }
