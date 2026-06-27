@@ -1,26 +1,26 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --kob-marinho: #1d2c52;
+  --kob-marinho-esc: #15203c;
+  --foreground: #1c2733;
 }
 
 @theme inline {
-  --color-background: var(--background);
+  --color-background: #f4f6fb;
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
 body {
-  background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  /* Fundo com identidade KOB: base clara com leve brilho azul-marinho no topo. */
+  background-color: #eef1f7;
+  background-image:
+    radial-gradient(1100px 480px at 50% -160px, rgba(29, 44, 82, 0.16), transparent 70%),
+    linear-gradient(180deg, #f4f6fb 0%, #eaeef6 100%);
+  background-attachment: fixed;
+  min-height: 100vh;
 }

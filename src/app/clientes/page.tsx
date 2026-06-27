@@ -10,7 +10,7 @@ export default async function ClientesPage() {
   const clientes = await prisma.client.findMany({ orderBy: { nome: 'asc' } })
 
   return (
-    <div className="flex min-h-screen flex-1 flex-col bg-zinc-50">
+    <div className="flex min-h-screen flex-1 flex-col">
       <AppHeader usuario={usuario} />
       <main className="mx-auto w-full max-w-4xl space-y-8 px-4 py-10">
         <header className="space-y-1">

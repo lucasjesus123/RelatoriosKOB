@@ -15,7 +15,7 @@ export default async function AdminCfopPage() {
   })
 
   return (
-    <div className="flex min-h-screen flex-1 flex-col bg-zinc-50">
+    <div className="flex min-h-screen flex-1 flex-col">
       <AppHeader usuario={usuario} />
       <main className="mx-auto w-full max-w-5xl space-y-8 px-4 py-10">
         <header className="space-y-1">
