@@ -31,6 +31,8 @@ export interface ComparativoResultado {
   temComercio: boolean
   temIndustria: boolean
   temServicos: boolean
+  // Resumo humanizado (2 parágrafos) preenchido na geração.
+  resumo?: string[]
 }
 
 function somar(itens: ItemCfopResumo[]): Decimal {

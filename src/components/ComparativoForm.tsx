@@ -187,25 +187,39 @@ export function ComparativoForm({ clientes }: { clientes: ClienteOpcao[] }) {
             <Card titulo="Resultado (Saídas − Entradas)" valor={res.resultado} destaque />
           </section>
 
+          {res.resumo && res.resumo.length > 0 && (
+            <section className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+              <h2 className="mb-3 text-lg font-semibold text-gray-900">Resumo do período</h2>
+              {res.resumo.map((p, i) => (
+                <p key={i} className="mb-2 text-sm leading-relaxed text-gray-700">
+                  {p}
+                </p>
+              ))}
+            </section>
+          )}
+
           <section className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
             <p className="text-xs uppercase text-gray-500">Valor do Simples Nacional (DAS)</p>
-            <p className="text-2xl font-bold text-orange-600">R$ {moeda(res.valorSimples)}</p>
+            <p className="text-3xl font-bold text-orange-600">R$ {moeda(res.valorSimples)}</p>
             <p className="mt-1 text-sm text-gray-600">Serviços (Simples): R$ {moeda(res.servicos)}</p>
-            <div className="mt-3 flex flex-wrap gap-8 text-sm text-gray-700">
+            <div className="mt-4 grid gap-3 sm:grid-cols-3">
               {res.temComercio && (
-                <span>
-                  % efetiva Vendas Comércio: <strong>{moeda(res.percComercio)}%</strong>
-                </span>
+                <div className="rounded-lg bg-[#1d2c52] p-4 text-center text-white">
+                  <p className="text-xs text-blue-200">% efetiva Vendas Comércio</p>
+                  <p className="text-3xl font-bold">{moeda(res.percComercio)}%</p>
+                </div>
               )}
               {res.temIndustria && (
-                <span>
-                  % efetiva Vendas Indústria: <strong>{moeda(res.percIndustria)}%</strong>
-                </span>
+                <div className="rounded-lg bg-[#1d2c52] p-4 text-center text-white">
+                  <p className="text-xs text-blue-200">% efetiva Vendas Indústria</p>
+                  <p className="text-3xl font-bold">{moeda(res.percIndustria)}%</p>
+                </div>
               )}
-              {res.temServicos && (
-                <span>
-                  % efetiva Serviços: <strong>{moeda(res.percServicos)}%</strong>
-                </span>
+              {res.temServicos && Number(res.servicos) > 0 && (
+                <div className="rounded-lg bg-[#1d2c52] p-4 text-center text-white">
+                  <p className="text-xs text-blue-200">% efetiva Serviços</p>
+                  <p className="text-3xl font-bold">{moeda(res.percServicos)}%</p>
+                </div>
               )}
             </div>
           </section>
