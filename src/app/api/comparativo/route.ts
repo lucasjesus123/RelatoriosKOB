@@ -7,6 +7,7 @@ import { carregarBuscadorCfop } from '@/lib/cfop-repo'
 import { extrairCfopsDoResumo } from '@/lib/cfop-resumo'
 import { parseSimplesNacional, parseSimplesIdentificacao } from '@/lib/simples'
 import { montarComparativo } from '@/lib/comparativo'
+import { gerarResumoComparativo } from '@/lib/humanize-comparativo'
 
 export const runtime = 'nodejs'
 
@@ -52,6 +53,7 @@ export async function POST(request: Request) {
     const itens = extrairCfopsDoResumo(textoCfop, buscarCfop)
     const simples = parseSimplesNacional(textoSimples)
     const comparativo = montarComparativo(itens, simples)
+    comparativo.resumo = gerarResumoComparativo(comparativo)
 
     if (itens.length === 0 && simples.valorSimples.isZero()) {
       return NextResponse.json(
