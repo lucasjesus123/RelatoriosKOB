@@ -12,7 +12,7 @@ export default async function UsuariosPage() {
   const usuarios = await prisma.user.findMany({ orderBy: [{ isActive: 'desc' }, { nome: 'asc' }] })
 
   return (
-    <div className="flex min-h-screen flex-1 flex-col bg-zinc-50">
+    <div className="flex min-h-screen flex-1 flex-col">
       <AppHeader usuario={admin} />
       <main className="mx-auto w-full max-w-5xl space-y-8 px-4 py-10">
         <div className="flex items-center justify-between">
